@@ -16,7 +16,9 @@ class _HomePageState extends State<HomePage> {
     return new ListView.builder(
       itemBuilder: (context, index) {
         if (index < _toDoItems.length) {
-          return _buildToDoItem(_toDoItems[index], index);
+          int l = _toDoItems.length;
+          return _buildToDoItem(
+              _toDoItems[l - index - 1], index, _toDoDescr[l - index - 1]);
         }
       },
     );
@@ -30,17 +32,106 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildToDoItem(String toDoText, int index) {
+  void _addToDoDesc(String task) {
+    if (task.length > 0) {
+      setState(() {
+        _toDoDescr.add(task);
+      });
+    }
+  }
+
+  Widget _buildToDoItem(String toDoText, int index, String toDoDesc) {
     return new ListTile(
       title: new Text(toDoText),
-      subtitle: new Text(toDoText),
+      subtitle: new Text(toDoDesc),
       onTap: () {
-        _promptRemoveToDoItem(index);
+        _pushViewToDoItems(toDoText, toDoDesc, index);
+        //  _promptRemoveToDoItem(index);
       },
     );
   }
 
-  void _pushAddToDoItems() {
+  void _pushViewToDoItems(String task, String taskDesc, int index) {
+    //  _removeToDoItem(index);
+    Navigator.of(context).push(
+      new MaterialPageRoute(
+        builder: (context) {
+          return new Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.redAccent,
+              title: Text('Edit Task '),
+              actions: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (_toDoItems.length > 0) {
+                          _removeToDoItem(index);
+                        }
+                        Navigator.pop(context);
+                      });
+                    },
+                    child: Icon(Icons.delete_forever),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _pushAddToDoItems(task, taskDesc);
+                        _removeToDoItem(index);
+                        //  Navigator.pop(context);
+                      });
+                    },
+                    child: Icon(Icons.edit),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Icon(Icons.check_circle),
+                  ),
+                )
+              ],
+            ),
+            body: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: new Text(
+                    task,
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: new Text(
+                    taskDesc,
+                    style: TextStyle(
+                        fontSize: 18.0,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _pushAddToDoItems(String task, String taskDesc) {
+    _item = task;
+    _desc = taskDesc;
     Navigator.of(context).push(
       new MaterialPageRoute(
         builder: (context) {
@@ -52,14 +143,9 @@ class _HomePageState extends State<HomePage> {
                 Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
-                    onTap: () {},
-                    child: Icon(Icons.delete_forever),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 20.0),
-                  child: GestureDetector(
                     onTap: () {
+                      _addToDoItems(_item);
+                      _addToDoDesc(_desc);
                       Navigator.pop(context);
                     },
                     child: Icon(Icons.check_circle),
@@ -77,24 +163,29 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.black,
                       fontWeight: FontWeight.w900),
                   //onChanged
-                  onSubmitted: (val) {
+                  /*onSubmitted: (val) {
                     _addToDoItems(val);
+                  },*/
+                  onChanged: (val) {
+                    _item = val;
                   },
+
                   decoration: new InputDecoration(
-                      hintText: 'Enter Title...',
+                      hintText: '$task',
                       contentPadding: const EdgeInsets.all(16.0)),
                 ),
                 new TextField(
                   autofocus: true,
-                  maxLines: 15,
+                  maxLines: 10,
                   style: TextStyle(
                       fontSize: 18.0,
-                      height: 1,
                       color: Colors.black54,
                       fontWeight: FontWeight.w600),
-                  onSubmitted: (val) {},
+                  onChanged: (val) {
+                    _desc = val;
+                  },
                   decoration: new InputDecoration(
-                      hintText: 'Enter Description',
+                      hintText: '$taskDesc',
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -111,8 +202,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _removeToDoItem(int index) {
+    index = _toDoItems.length - index - 1;
+
     setState(() {
+      print(_toDoItems);
+      print(_toDoDescr);
+      print(index);
+      print(_toDoItems.length);
+      print(_toDoItems.isNotEmpty);
       _toDoItems.removeAt(index);
+      _toDoDescr.removeAt(index);
+
+      print(_toDoItems);
+      print(_toDoDescr);
+      print(_toDoItems.isNotEmpty);
+      print(_toDoDescr.isNotEmpty);
+      print(_toDoItems);
+      print(index);
+      print(_toDoItems.length);
     });
   }
 
@@ -147,7 +254,9 @@ class _HomePageState extends State<HomePage> {
       ),
       body: _buildToDoList(),
       floatingActionButton: FloatingActionButton(
-        onPressed: _pushAddToDoItems,
+        onPressed: () {
+          _pushAddToDoItems('Enter Title...', 'Enter Description...');
+        },
         tooltip: 'Add Task',
         child: Icon(Icons.add_comment),
       ),
