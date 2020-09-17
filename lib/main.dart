@@ -1,18 +1,21 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:todo_app/Screens/homePage.dart';
 
-void main() => runApp(new TodoApp());
+void main() {
+  runApp(MyApp());
+}
 
-class TodoApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'To Do List',
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('To do List'),
-        ),
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      home: HomePage(),
     );
   }
 }
