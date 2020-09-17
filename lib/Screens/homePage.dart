@@ -1,3 +1,4 @@
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildToDoItem(String toDoText, int index, String toDoDesc) {
     return new ListTile(
       title: new Text(toDoText),
-      subtitle: new Text(toDoDesc),
+      //subtitle: new Text(toDoDesc),
       onTap: () {
         _pushViewToDoItems(toDoText, toDoDesc, index);
         //  _promptRemoveToDoItem(index);
@@ -123,10 +124,23 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+            floatingActionButton: FloatingActionButton(
+              child: Icon(Icons.share),
+              onPressed: () async => await _shareText(task, taskDesc),
+            ),
           );
         },
       ),
     );
+  }
+
+  Future<void> _shareText(String task, String taskDesc) async {
+    try {
+      Share.text('my text title', '*' + '$task' + '*' + '\n' + '$taskDesc',
+          'text/plain');
+    } catch (e) {
+      print('error: $e');
+    }
   }
 
   void _pushAddToDoItems(String task, String taskDesc) {
@@ -158,6 +172,7 @@ class _HomePageState extends State<HomePage> {
                 new TextField(
                   autofocus: true,
                   maxLines: 1,
+                  textCapitalization: TextCapitalization.characters,
                   style: TextStyle(
                       fontSize: 20.0,
                       color: Colors.black,
