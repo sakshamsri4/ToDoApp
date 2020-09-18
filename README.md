@@ -1,16 +1,32 @@
-# todo_app
+##Simple
 
-A new Flutter application.
+ToDo App
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+##Ios and Android Flutter Project
 
-A few resources to get you started if this is your first Flutter project:
+Simple Flutter Task Manager.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Some features of this app are:
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1.Create a task
+2.Edit a task
+3.Delete a task
+4.Data saved through local storage
+
+Technologies Used:
+1.Dart
+2.Flutter
+3.Git and Github
+4.Rest API
+
+Packages Used:
+1.esys_flutter_share: ^1.0.2
+2.shared_preferences: ^0.5.10
+
+
+Following Screenshots of the app:
+<img src="./Screenshot/s3.jpeg" widt="500" height="400">
+<img src="./Screenshot/s2.jpeg" widt="500" height="400">
+<img src="./Screenshot/s1.jpeg" widt="500" height="400">
+<img src="./Screenshot/s4.jpeg" widt="500" height="400">
