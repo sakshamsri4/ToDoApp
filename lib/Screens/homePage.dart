@@ -1,6 +1,12 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../todo.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -9,17 +15,52 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<String> _toDoItems = [];
+  List<Todo> list = new List<Todo>();
+  SharedPreferences sharedPreferences;
   List<String> _toDoDescr = [];
   String _item = '';
   String _desc = '';
 
+  @override
+  void initState() {
+    loadSharedPreferencesAndData();
+    super.initState();
+  }
+
+  void loadSharedPreferencesAndData() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    loadData();
+  }
+
+  void loadData() {
+    List<String> listString = sharedPreferences.getStringList('list');
+    if (listString != null) {
+      list = listString.map((item) => Todo.fromMap(json.decode(item))).toList();
+      setState(() {});
+    }
+  }
+
+  Future<void> saveData() async {
+    List<String> stringList =
+        list.map((item) => json.encode(item.toMap())).toList();
+    sharedPreferences.setStringList('list', stringList);
+  }
+
+  Widget emptyList() {
+    return Center(
+      child: Text('No Items'),
+    );
+  }
+
   Widget _buildToDoList() {
     return new ListView.builder(
       itemBuilder: (context, index) {
-        if (index < _toDoItems.length) {
-          int l = _toDoItems.length;
-          return _buildToDoItem(
-              _toDoItems[l - index - 1], index, _toDoDescr[l - index - 1]);
+        if (index < list.length) {
+          int l = list.length;
+          return _buildToDoItem(list[l - index - 1].title, index,
+              list[l - index - 1].description);
+          //list[l - index - 1],
+          //index);
         }
       },
     );
@@ -41,12 +82,16 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildToDoItem(String toDoText, int index, String toDoDesc) {
+  Widget _buildToDoItem(
+    String task,
+    int index,
+    String desc,
+  ) {
     return new ListTile(
-      title: new Text(toDoText),
+      title: new Text(task),
       //subtitle: new Text(toDoDesc),
       onTap: () {
-        _pushViewToDoItems(toDoText, toDoDesc, index);
+        _pushViewToDoItems(task, desc, index);
         //  _promptRemoveToDoItem(index);
       },
     );
@@ -67,8 +112,9 @@ class _HomePageState extends State<HomePage> {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        if (_toDoItems.length > 0) {
-                          _removeToDoItem(index);
+                        if (list.length > 0) {
+                          _removeToDoItem(
+                              index, Todo(title: task, description: taskDesc));
                         }
                         Navigator.pop(context);
                       });
@@ -82,8 +128,9 @@ class _HomePageState extends State<HomePage> {
                     onTap: () {
                       setState(() {
                         _pushAddToDoItems(task, taskDesc);
-                        _removeToDoItem(index);
-                        //  Navigator.pop(context);
+                        _removeToDoItem(
+                            index, Todo(title: task, description: taskDesc));
+                        //Navigator.pop(context);
                       });
                     },
                     child: Icon(Icons.edit),
@@ -146,6 +193,7 @@ class _HomePageState extends State<HomePage> {
   void _pushAddToDoItems(String task, String taskDesc) {
     _item = task;
     _desc = taskDesc;
+
     Navigator.of(context).push(
       new MaterialPageRoute(
         builder: (context) {
@@ -158,9 +206,17 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
                     onTap: () {
+                      list.add(Todo(title: _item, description: _desc));
+                      print(list[0].title);
+                      print(list.length);
                       _addToDoItems(_item);
                       _addToDoDesc(_desc);
-                      Navigator.pop(context);
+                      saveData();
+
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage()),
+                          ModalRoute.withName("/Home"));
                     },
                     child: Icon(Icons.check_circle),
                   ),
@@ -172,6 +228,7 @@ class _HomePageState extends State<HomePage> {
                 new TextField(
                   autofocus: true,
                   maxLines: 1,
+                  controller: TextEditingController()..text = '$task',
                   textCapitalization: TextCapitalization.characters,
                   style: TextStyle(
                       fontSize: 20.0,
@@ -186,12 +243,13 @@ class _HomePageState extends State<HomePage> {
                   },
 
                   decoration: new InputDecoration(
-                      hintText: '$task',
+                      hintText: 'Enter title...',
                       contentPadding: const EdgeInsets.all(16.0)),
                 ),
                 new TextField(
                   autofocus: true,
                   maxLines: 10,
+                  controller: TextEditingController()..text = '$taskDesc',
                   style: TextStyle(
                       fontSize: 18.0,
                       color: Colors.black54,
@@ -200,7 +258,7 @@ class _HomePageState extends State<HomePage> {
                     _desc = val;
                   },
                   decoration: new InputDecoration(
-                      hintText: '$taskDesc',
+                      hintText: 'Enter Description...',
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -216,48 +274,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _removeToDoItem(int index) {
-    index = _toDoItems.length - index - 1;
+  void _removeToDoItem(int index, Todo item) {
+    index = list.length - index - 1;
 
     setState(() {
-      print(_toDoItems);
-      print(_toDoDescr);
-      print(index);
-      print(_toDoItems.length);
-      print(_toDoItems.isNotEmpty);
-      _toDoItems.removeAt(index);
-      _toDoDescr.removeAt(index);
-
-      print(_toDoItems);
-      print(_toDoDescr);
-      print(_toDoItems.isNotEmpty);
-      print(_toDoDescr.isNotEmpty);
-      print(_toDoItems);
-      print(index);
-      print(_toDoItems.length);
+      print(list.length);
+      print(list[index].title);
+      list.removeAt(index);
+      saveData();
     });
-  }
-
-  void _promptRemoveToDoItem(int index) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return new AlertDialog(
-            title: new Text('Mark "${_toDoItems[index]}" as done?'),
-            actions: <Widget>[
-              new FlatButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: new Text('CANCEL'),
-              ),
-              new FlatButton(
-                  child: new Text('MARK AS DONE'),
-                  onPressed: () {
-                    _removeToDoItem(index);
-                    Navigator.of(context).pop();
-                  }),
-            ],
-          );
-        });
   }
 
   @override
@@ -267,10 +292,10 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.redAccent,
         title: new Text('To do List'),
       ),
-      body: _buildToDoList(),
+      body: list.isEmpty ? emptyList() : _buildToDoList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _pushAddToDoItems('Enter Title...', 'Enter Description...');
+          _pushAddToDoItems('', '');
         },
         tooltip: 'Add Task',
         child: Icon(Icons.add_comment),
